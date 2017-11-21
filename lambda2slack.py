@@ -16,9 +16,8 @@ def lambda_handler(event, context):
 
     text = u"`%s` で `%s` を検知しました。\n\n 内容\n ```\n StateChangeTime：%s\n Region：%s\n MetricName：%s\n FunctionName：%s ```\n" % (AlarmName, NewStateValue, StateChangeTime, Region, MetricName, Dimensions[0]['value'])
 
-    slack = slackweb.Slack(url="https://hooks.slack.com/services/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")
+    slack = slackweb.Slack(url=SLACK_WEBHOOK_URL)
 
-#    slack.notify(text="This is a *test* from lambda2slack.", channel="#coffee", username="coffee-bot", icon_emoji=":coffee", mrkdwn=True)
 
     slack.notify(text=text)
 
