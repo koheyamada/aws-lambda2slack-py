@@ -1,24 +1,46 @@
 import slackweb
 import json
+import os
 
 def lambda_handler(event, context):
-    message_dumps = json.dumps(event['Records'][0]['Sns']['Message'])
-    message_loads = json.loads(message_dumps)
+
+    # SNS
+    sns_dumps = json.dumps(event['Records'][0]['Sns'])
+    sns = json.loads(sns_dumps)
+
+    # Message
+    message_loads = json.loads(sns_dumps)['Message']
     message = json.loads(message_loads)
 
-    AlarmName = message['AlarmName']
-    NewStateValue = message['NewStateValue']
-    StateChangeTime = message['StateChangeTime']
-    Region = message['Region']
-    Trigger = json.dumps(message['Trigger'])
-    MetricName = json.loads(Trigger)['MetricName']
-    Dimensions = json.loads(Trigger)['Dimensions']
+    # Trigger
+    trigger_dumps = json.dumps(message['Trigger'])
+    trigger = json.loads(trigger_dumps)
 
-    text = u"`%s` で `%s` を検知しました。\n\n 内容\n ```\n StateChangeTime：%s\n Region：%s\n MetricName：%s\n FunctionName：%s ```\n" % (AlarmName, NewStateValue, StateChangeTime, Region, MetricName, Dimensions[0]['value'])
+    # Slack
+    url = os.environ['SLACK_WEBHOOK_URL']
+    slack = slackweb.Slack(url=url)
 
-    slack = slackweb.Slack(url=SLACK_WEBHOOK_URL)
-
-
+    text = u"%s     %s \
+		\n `%s` で `%s` を検知しました。 \
+		\n> *Description：* %s \
+		\n> *AWSAccountId：* %s \
+		\n> *StateChangeTime：* %s \
+		\n> *Region：* %s \
+		\n> *MetricName：* %s \
+		\n> *FunctionName：* %s "\
+		 % \
+		( \
+			sns['Timestamp'], \
+			sns['TopicArn'], \
+			message['AlarmName'], \
+			message['NewStateValue'], \
+			message['AlarmDescription'], \
+			message['AWSAccountId'], \
+			message['StateChangeTime'], \
+			message['Region'], \
+			trigger['MetricName'], \
+			trigger['Dimensions'][0]['value'] \
+		)
     slack.notify(text=text)
 
     return { 
