@@ -1,3 +1,7 @@
+'''
+ Copyright © 2017 kohei YAMADA
+'''
+
 import slackweb
 import json
 import os
